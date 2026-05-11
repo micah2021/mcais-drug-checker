@@ -255,7 +255,7 @@ function AdBanner(){
     {name:"MCAIS",tagline:"Your trusted health technology partner in Nigeria. AI-powered healthcare tools.",
      wa:PROFESSIONALS[1]?.whatsapp||"2349064815363",label:"Official Partner",cta:"Contact MCAIS"},
     {name:"Advertise Here",tagline:"Reach thousands of Nigerian patients and pharmacists daily. ₦15,000/month.",
-     wa:PROFESSIONALS[0]?.whatsapp||"2348119389385",label:"Sponsored",cta:"Book slot"},
+     wa:"2349064815363",label:"Sponsored",cta:"Book slot"},
   ];
   const [i,setI]=useState(0);
   useEffect(()=>{const t=setInterval(()=>setI(x=>(x+1)%ads.length),8000);return()=>clearInterval(t);},[]);
@@ -277,7 +277,9 @@ function AdBanner(){
         </div>
       </div>
       <div style={{flexShrink:0}}>
-        <WABtn href={waUrl(ad.wa,`Hello ${ad.name}, I saw your advert on Nigeria Drug Checker.`)}
+        <WABtn href={waUrl(ad.wa, ad.name==="Advertise Here"
+          ? "Hello MCAIS, I am interested in advertising on Nigeria Drug Checker. Please send me details about the ₦15,000/month banner slot."
+          : `Hello ${ad.name}, I saw your advert on Nigeria Drug Checker.`)}
           label={ad.cta} color={C.blue}/>
         <div style={{fontSize:10,color:"#94A3B8",textAlign:"right",marginTop:4}}>Sponsored · Advertise here</div>
       </div>
@@ -493,8 +495,8 @@ function ProfsTab(){
           Plans start at ₦2,000/month.
         </p>
         <WABtn
-          href={waUrl(PROFESSIONALS[0]?.whatsapp||"2348119389385",
-            "Hello, I am a pharmacist/doctor and I want to join Nigeria Drug Checker as a verified professional.")}
+          href={waUrl("2349064815363",
+            "Hello MCAIS, I am a pharmacist/doctor and I want to join Nigeria Drug Checker as a verified professional.")}
           label="Apply to join — ₦2,000/month" color={C.blue} icon="✉️"/>
       </Card>
     </div>
