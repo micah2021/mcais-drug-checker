@@ -7,16 +7,16 @@ const PAYSTACK_KEY = "pk_live_XXXXXXXXXXXXXXXXXXXXXXXX";
 
 const PROFESSIONALS = [
   {
-    id:1, name:"Pharm. Micah Emmanuel", role:"pharmacist",
+    id:1, name:"Pharm. Rikum Bamaiyi", role:"pharmacist",
     specialty:"General pharmacy · Drug interactions · Prescription review",
-    location:"Lagos, Nigeria", whatsapp:"2348119389385",
+    location:"Zaria Kaduna, Nigeria", whatsapp:"2348119389385",
     available:true, verified:true, plan:"pro",
     rating:4.9, reviews:47, avatar:"M", color:"#059669",
   },
   {
-    id:2, name:"Dr. Emmanuel Chukwu", role:"doctor",
+    id:2, name:"Dr. Manasseh Godwin ", role:"doctor",
     specialty:"General medicine · Malaria · Diabetes · Hypertension",
-    location:"Abuja, Nigeria", whatsapp:"2349064815363",
+    location:"GOmbe, Nigeria", whatsapp:"2349064815363",
     available:true, verified:true, plan:"pro",
     rating:4.8, reviews:31, avatar:"E", color:"#1A56DB",
   },
