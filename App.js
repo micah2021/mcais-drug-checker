@@ -504,8 +504,414 @@ function ProfsTab(){
 }
 
 // ══════════════════════════════════════════════════════════════════════════
-// PHOTO TAB
+// AI HEALTH TAB — NigeriaHealthLLM (rule-based, no API cost)
 // ══════════════════════════════════════════════════════════════════════════
+
+const AI_KNOWLEDGE = {
+  // ── MALARIA ──────────────────────────────────────────────────────────────
+  malaria: {
+    keywords:["malaria","fever","chills","coartem","chloroquine","artemether","plasmodium","alu","lonart"],
+    response:`🦟 **Malaria in Nigeria**
+
+**Symptoms:** Fever, chills, headache, body aches, nausea, fatigue. Severe cases (especially children under 5) include convulsions, altered consciousness, and severe anaemia.
+
+**First-line treatment:** Artemether-Lumefantrine (Coartem/ALu) — always take with food for better absorption. Chloroquine resistance is widespread — no longer first-line.
+
+**Prevention:** Insecticide-treated bed nets (ITNs), indoor residual spraying, intermittent preventive treatment in pregnancy (IPTp).
+
+**Nigerian context:** Nigeria accounts for 27% of global malaria cases. Children under 5 and pregnant women are most at risk. Seek care early — malaria can become severe within 24 hours.
+
+⚠️ Always confirm diagnosis before treatment. See a healthcare professional.`,
+  },
+
+  // ── TYPHOID ──────────────────────────────────────────────────────────────
+  typhoid: {
+    keywords:["typhoid","salmonella","typhi","enteric fever","typhoid fever"],
+    response:`🦠 **Typhoid Fever in Nigeria**
+
+**Symptoms:** Prolonged fever (lasting more than 3 days), headache, abdominal pain, weakness, loss of appetite. Sometimes a rash called "rose spots."
+
+**Treatment:** Azithromycin or Ceftriaxone (IV for severe cases). Resistance to older drugs like Chloramphenicol and Ampicillin is now common in Nigeria.
+
+**Prevention:** Clean water, handwashing with soap, safe food handling, avoid street food from unhygienic sources. Typhoid vaccination is available.
+
+**Nigerian context:** Very common in areas with poor water and sanitation. Often confused with malaria — laboratory testing (Widal test or blood culture) is important for accurate diagnosis.
+
+⚠️ Self-medication without diagnosis is dangerous. Visit a clinic for blood tests.`,
+  },
+
+  // ── TB ────────────────────────────────────────────────────────────────────
+  tuberculosis: {
+    keywords:["tb","tuberculosis","cough","night sweats","weight loss","rifampicin","isoniazid","ntblcp","haemoptysis","coughing blood"],
+    response:`🫁 **Tuberculosis (TB) in Nigeria**
+
+**Symptoms:** Persistent cough lasting more than 2 weeks, night sweats, unexplained weight loss, fever, coughing up blood (haemoptysis), chest pain.
+
+**Diagnosis:** GeneXpert MTB/RIF test (detects TB and drug resistance in 2 hours) — available free at NTBLCP-accredited facilities. Also chest X-ray and sputum smear.
+
+**Treatment:** Standard regimen — 2 months of HRZE (Isoniazid + Rifampicin + Pyrazinamide + Ethambutol), then 4 months of HR. **Treatment is FREE in Nigeria** through NTBLCP.
+
+**Important:** In a young Nigerian patient with respiratory symptoms, TB is more likely than lung cancer. Always test for HIV when TB is diagnosed — 17% of TB patients in Nigeria are HIV-positive.
+
+⚠️ Do not stop treatment early — this causes drug resistance. Complete the full course.`,
+  },
+
+  // ── HIV ───────────────────────────────────────────────────────────────────
+  hiv: {
+    keywords:["hiv","aids","antiretroviral","art","arv","tld","nevirapine","cd4","viral load","pepfar","pmtct"],
+    response:`🔴 **HIV/AIDS in Nigeria**
+
+**Overview:** Nigeria has the world's second largest HIV burden — approximately 1.9 million people living with HIV. Prevalence is highest in Cross River, Benue, Taraba, and Akwa Ibom states.
+
+**First-line ART:** Tenofovir + Lamivudine + Dolutegravir (TLD) — the current standard regimen in Nigeria. **ART is FREE** through PEPFAR-supported facilities.
+
+**PMTCT:** HIV-positive pregnant women receive lifelong ART (Option B+) to prevent mother-to-child transmission. Babies receive Nevirapine for 6 weeks.
+
+**Testing:** Know your status. HIV testing is free at most government health facilities. Rapid results available same day.
+
+**Important drug interaction:** Rifampicin (TB drug) interacts with many ARVs — careful drug selection is required for TB/HIV co-infected patients.
+
+⚠️ Early treatment prevents illness and stops transmission. Seek care confidentially at any government facility.`,
+  },
+
+  // ── HYPERTENSION ─────────────────────────────────────────────────────────
+  hypertension: {
+    keywords:["hypertension","high blood pressure","bp","blood pressure","amlodipine","lisinopril","stroke","heart","systolic","diastolic"],
+    response:`❤️ **Hypertension in Nigeria**
+
+**Overview:** Affects approximately 1 in 3 Nigerian adults — one of the leading causes of stroke, chronic kidney disease, and heart failure in Nigeria.
+
+**Symptoms:** Often called the "silent killer" — many people have no symptoms. Severe cases may cause headache, dizziness, blurred vision, or chest pain.
+
+**Common medications in Nigeria:**
+• Amlodipine (first-line calcium channel blocker)
+• Lisinopril or Enalapril (ACE inhibitors)
+• Hydrochlorothiazide (diuretic)
+• Methyldopa (for hypertension in pregnancy)
+
+**Lifestyle changes:** Reduce salt (avoid excess Maggi/seasoning cubes), increase physical activity, reduce alcohol, maintain healthy weight, eat more fruits and vegetables.
+
+**Warning:** Never stop blood pressure medication without consulting your doctor — even if you feel well.
+
+⚠️ Regular blood pressure monitoring is essential. Many pharmacies offer free BP checks.`,
+  },
+
+  // ── DIABETES ─────────────────────────────────────────────────────────────
+  diabetes: {
+    keywords:["diabetes","blood sugar","glucose","metformin","insulin","glibenclamide","hyperglycemia","hypoglycemia","diabetic","hba1c"],
+    response:`🩺 **Diabetes in Nigeria**
+
+**Symptoms:** Frequent urination (especially at night), excessive thirst, unexplained weight loss, fatigue, blurred vision, slow-healing wounds, recurrent infections.
+
+**Types:**
+• Type 1 — requires insulin (less common, starts young)
+• Type 2 — most common in Nigeria, rising due to urbanisation, high-carb diets, and physical inactivity
+
+**Common medications:**
+• Metformin — first-line, affordable, widely available
+• Glibenclamide (Daonil) — sulphonylurea
+• Insulin (Actrapid, Mixtard) — for Type 1 and advanced Type 2
+
+**Dietary advice:** Reduce white rice, eba, fufu, sugary drinks (Fanta, Malta). Eat more vegetables, beans, unripe plantain, brown rice. Eat at regular intervals.
+
+**Dangerous combinations:** Metformin + alcohol = risk of lactic acidosis. Glibenclamide + alcohol = dangerous low blood sugar.
+
+⚠️ Monitor blood sugar regularly. Never skip meals when on diabetes medication.`,
+  },
+
+  // ── SICKLE CELL ──────────────────────────────────────────────────────────
+  sickle_cell: {
+    keywords:["sickle cell","scd","sickle","haemoglobin","genotype","as","ss","sc","haemolysis","vaso-occlusive","crisis","hydroxyurea"],
+    response:`🩸 **Sickle Cell Disease in Nigeria**
+
+**Overview:** Nigeria has the world's highest burden of sickle cell disease — approximately 150,000 children born with SCD annually. About 25% of Nigerians carry the sickle cell trait (AS genotype).
+
+**Genotypes:**
+• AA — Normal
+• AS — Carrier (trait) — usually healthy
+• SS — Sickle cell disease (most severe)
+• SC — Sickle cell disease (moderate severity)
+
+**Management:**
+• Daily folic acid supplementation
+• Prophylactic penicillin (children under 5)
+• Hydroxyurea therapy (where available)
+• Malaria prevention (nets + chemoprophylaxis) — malaria triggers crisis
+• Adequate hydration at all times
+• Regular clinic follow-up
+
+**Crisis triggers:** Dehydration, cold (harmattan season), infections, physical exhaustion, emotional stress, altitude.
+
+**Pre-marital advice:** Both partners should know their genotype. AS + AS = 25% chance of SS child.
+
+⚠️ Pre-marital genotype testing is strongly recommended before marriage.`,
+  },
+
+  // ── MATERNAL HEALTH ──────────────────────────────────────────────────────
+  maternal: {
+    keywords:["pregnancy","pregnant","antenatal","maternal","eclampsia","labour","delivery","breastfeeding","postpartum","miscarriage","anc","folic acid"],
+    response:`🤱 **Maternal Health in Nigeria**
+
+**Danger signs in pregnancy — seek emergency care immediately:**
+• Severe headache with visual disturbance (eclampsia warning)
+• Vaginal bleeding at any stage
+• Severe abdominal pain
+• Fever with rigors
+• Convulsions
+• Difficulty breathing
+• Reduced baby movements
+• Swelling of face, hands, or feet
+
+**Antenatal care:** Minimum 8 ANC visits recommended. Includes blood pressure monitoring, HIV testing, malaria prevention (IPTp with SP), iron + folic acid supplementation, tetanus vaccination.
+
+**Key medications in pregnancy:**
+• Folic acid — essential from conception to prevent neural tube defects
+• Iron supplements — for anaemia (very common in Nigerian pregnancies)
+• Sulfadoxine-Pyrimethamine (SP) — malaria prevention in pregnancy
+• Methyldopa — for hypertension in pregnancy (NOT Lisinopril — dangerous in pregnancy)
+
+**Unsafe in pregnancy:** Ibuprofen (third trimester), Misoprostol without medical supervision, most antibiotics without prescription.
+
+⚠️ Always disclose all medications to your doctor or midwife during pregnancy.`,
+  },
+
+  // ── MALNUTRITION ─────────────────────────────────────────────────────────
+  malnutrition: {
+    keywords:["malnutrition","stunting","wasting","underweight","sam","mam","rutf","plumpy","kwashiorkor","marasmus","nutrition","malnourished"],
+    response:`🥗 **Child Malnutrition in Nigeria**
+
+**Overview:** 1 in 3 Nigerian children under 5 are malnourished. Stunting 37%, wasting 7%, underweight 22%. Highest burden in North-West and North-East Nigeria.
+
+**Types:**
+• Severe Acute Malnutrition (SAM) — requires immediate treatment
+• Moderate Acute Malnutrition (MAM) — needs nutritional support
+• Stunting (chronic) — long-term growth faltering
+
+**Treatment:**
+• SAM: Ready-to-Use Therapeutic Food (RUTF/Plumpy'Nut) + medical care
+• Community-based management (CMAM) at primary health centres
+• Treatment is **free** at government health facilities
+
+**Warning signs in children:** visible severe wasting, oedema (swelling) of both feet, loss of appetite, very weak/lethargic.
+
+**Prevention:** Exclusive breastfeeding for 6 months, appropriate complementary feeding, vitamin A supplementation, zinc for diarrhoea treatment.
+
+⚠️ Malnourished children are at very high risk from malaria, pneumonia, and diarrhoea. Seek care urgently.`,
+  },
+
+  // ── LASSA FEVER ──────────────────────────────────────────────────────────
+  lassa: {
+    keywords:["lassa","lassa fever","haemorrhagic","ribavirin","mastomys","rat","ncdc","viral haemorrhagic"],
+    response:`⚠️ **Lassa Fever in Nigeria**
+
+**Overview:** Viral haemorrhagic fever caused by Lassa virus. Transmitted primarily through contact with the multimammate rat (Mastomys natalensis) or infected bodily fluids.
+
+**Endemic states:** Edo, Ondo, Bauchi, Taraba — Nigeria has the world's highest Lassa fever burden.
+
+**Symptoms:** Fever, weakness, headache, sore throat, muscle pain, chest pain, nausea, vomiting. Severe cases — bleeding from gums, nose, eyes.
+
+**Treatment:** Ribavirin antiviral (most effective when given early). Strict infection prevention and control (IPC) measures to prevent spread in healthcare settings.
+
+**Prevention:**
+• Store food in rodent-proof containers
+• Avoid contact with rats and their droppings
+• Maintain good household hygiene
+• Cook food thoroughly
+• Avoid consuming bush rat (a common delicacy in endemic areas)
+• Wear gloves when handling sick patients
+
+**Report:** Contact NCDC immediately if Lassa fever is suspected — call 0800-970000-10.
+
+⚠️ Lassa fever is a notifiable disease. Do NOT attempt to treat at home.`,
+  },
+
+  // ── COMMON COLD / FLU ─────────────────────────────────────────────────────
+  cold: {
+    keywords:["cold","cough","flu","influenza","runny nose","sore throat","congestion","paracetamol","vitamin c","catarrh"],
+    response:`🤧 **Common Cold & Flu in Nigeria**
+
+**Symptoms:** Runny nose, sore throat, cough, mild fever, body aches, fatigue. Flu tends to be more severe with sudden high fever.
+
+**Treatment (symptomatic):**
+• Paracetamol or Ibuprofen — for fever and pain
+• Plenty of water and rest
+• Warm liquids — warm water with honey and lemon
+• Vitamin C supplements — may reduce duration
+• Saline nasal drops — for congestion
+
+**When to see a doctor:**
+• High fever (above 39°C) lasting more than 3 days
+• Difficulty breathing or chest pain
+• Severe headache or stiff neck
+• Symptoms worsening after day 7
+
+**Antibiotics are NOT effective** against viral infections like cold and flu. Antibiotic misuse is a major problem in Nigeria.
+
+**Nigerian home remedies that help:** Steam inhalation, ginger tea, garlic, warm salt water gargle.
+
+⚠️ If fever is persistent in Nigeria, always rule out malaria first.`,
+  },
+
+  // ── DIARRHOEA ─────────────────────────────────────────────────────────────
+  diarrhoea: {
+    keywords:["diarrhoea","diarrhea","loose stool","watery stool","ors","oral rehydration","dehydration","zinc","cholera","gastroenteritis"],
+    response:`💧 **Diarrhoea Treatment in Nigeria**
+
+**WHO/UNICEF treatment protocol:**
+
+1. **ORS (Oral Rehydration Solution)** — mix one ORS sachet in 1 litre of clean water. Give frequently in small sips. Available at all pharmacies — very cheap.
+
+2. **Zinc supplementation** — 10mg daily for children under 6 months, 20mg daily for children over 6 months — for 10–14 days. Reduces severity and duration significantly.
+
+3. **Continue feeding** — do not stop breastfeeding or food. Continue normal diet.
+
+4. **Antibiotics** — only for bloody diarrhoea (dysentery). Azithromycin or Ciprofloxacin.
+
+**When to seek emergency care:**
+• Sunken eyes, dry mouth, no tears when crying
+• No urination for 6+ hours
+• Bloody diarrhoea
+• Vomiting everything
+• Child is very weak or unconscious
+
+**Prevention:** Clean water, handwashing with soap, food hygiene, exclusive breastfeeding.
+
+⚠️ Dehydration from diarrhoea kills children quickly. Start ORS immediately.`,
+  },
+
+  // ── DRUG INTERACTIONS GENERAL ────────────────────────────────────────────
+  drug_interactions: {
+    keywords:["drug interaction","drug combination","safe to take","combine","mixing drugs","side effect","reaction","dangerous","contraindicated"],
+    response:`💊 **Understanding Drug Interactions**
+
+**Most dangerous combinations in Nigeria:**
+
+🔴 **SEVERE — Never combine:**
+• Flagyl (Metronidazole) + Alcohol — severe reaction, vomiting, palpitations
+• Rifampicin + Oral contraceptives — pill becomes ineffective
+• Warfarin + Aspirin/Ibuprofen/Septrin — dangerous bleeding
+• Tramadol + Alcohol — respiratory failure
+• Diazepam (Valium) + Alcohol — coma, death
+
+🟠 **MODERATE — Use with caution:**
+• Ciprofloxacin + Antacids — take 2 hours apart
+• Doxycycline + Iron/Antacids — take 2 hours apart
+• Amlodipine + Simvastatin — limit Simvastatin to 20mg
+
+✅ **SAFE combinations:**
+• Coartem (Artemether + Lumefantrine) — standard malaria treatment
+• Amlodipine + Lisinopril — common Nigerian BP combination
+• Paracetamol + Ibuprofen — short-term pain relief
+
+**Use the Drug Check tab** to check any specific combination instantly.
+
+⚠️ Always tell your pharmacist ALL medications you are taking, including herbal medicines and agbo.`,
+  },
+
+  // ── HERBAL MEDICINES ─────────────────────────────────────────────────────
+  herbal: {
+    keywords:["herbal","agbo","bitter leaf","moringa","garlic","ginger","black seed","neem","traditional medicine","yoyo bitters","jedi jedi","oroki"],
+    response:`🌿 **Herbal Medicines & Conventional Drugs in Nigeria**
+
+**Important interactions to know:**
+
+⚠️ **Agbo (herbal mixtures) + Diabetes medications** — agbo can unpredictably raise or lower blood sugar. Very dangerous with insulin or Metformin.
+
+⚠️ **Garlic supplements + Warfarin** — significantly increases bleeding risk. Cooking amounts are generally safe, but supplements are dangerous.
+
+⚠️ **Moringa + Metformin** — moringa may lower blood sugar further. Monitor blood sugar closely.
+
+⚠️ **Turmeric/Curcumin + Warfarin** — may increase anticoagulant effect.
+
+⚠️ **Black seed (Habbatus sauda) + Warfarin** — may enhance anticoagulant effect.
+
+⚠️ **Bitter leaf (Ewuro) + Amlodipine** — may have mild additive blood pressure lowering effect.
+
+**General advice:**
+• Always tell your doctor and pharmacist about ALL herbal medicines you use
+• "Natural" does not mean safe — herbal medicines can have powerful drug interactions
+• Agbo given to children can be particularly dangerous
+
+⚠️ Do not replace prescribed medication with herbal alternatives without consulting your doctor.`,
+  },
+
+  // ── CHILDREN'S HEALTH ────────────────────────────────────────────────────
+  children: {
+    keywords:["child","children","baby","infant","paediatric","kids","under 5","newborn","vaccination","immunisation","growth"],
+    response:`👶 **Children's Health in Nigeria**
+
+**Routine immunisation schedule (EPI Nigeria):**
+• Birth: BCG, OPV0
+• 6 weeks: Penta, PCV, OPV, IPV
+• 10 weeks: Penta, PCV, OPV
+• 14 weeks: Penta, PCV, OPV
+• 6 months: Vitamin A
+• 9 months: Measles/Rubella, Yellow Fever
+• 15 months: Measles 2nd dose
+• Girls 9–14 years: HPV vaccine
+
+**Leading causes of under-5 death in Nigeria:**
+1. Malaria — always check if a child has fever
+2. Pneumonia — fast breathing, difficulty breathing
+3. Diarrhoea — treat with ORS and Zinc immediately
+4. Malnutrition — check growth regularly
+5. Neonatal infections
+
+**Danger signs in children — seek emergency care:**
+• Unable to drink or breastfeed
+• Vomiting everything
+• Convulsions
+• Very fast breathing
+• Very high fever (above 38.5°C in under 3 months)
+• Unconscious or very lethargic
+
+**Drug dosing:** Never give adult doses to children. Always ask your pharmacist for the correct paediatric dose based on weight.
+
+⚠️ Keep vaccinations up to date — they are free at all government health facilities.`,
+  },
+};
+
+function getAIResponse(question) {
+  const q = question.toLowerCase();
+  // Find best matching knowledge base entry
+  let bestMatch = null;
+  let bestScore = 0;
+  for (const [, entry] of Object.entries(AI_KNOWLEDGE)) {
+    const score = entry.keywords.filter(k => q.includes(k)).length;
+    if (score > bestScore) { bestScore = score; bestMatch = entry; }
+  }
+  if (bestMatch && bestScore > 0) return bestMatch.response;
+
+  // Generic Nigerian health fallback
+  return `🩺 **General Health Advice — Nigerian Context**
+
+I don't have specific information about that exact query, but here is general advice:
+
+**For drug interactions:** Use the 💊 Drug Check tab to check any two drugs instantly against our Nigerian clinical database.
+
+**For urgent symptoms:** Contact our verified professionals directly using the 👨‍⚕️ Professionals tab.
+
+**Common health resources in Nigeria:**
+• NCDC Helpline: 0800-970000-10 (free, 24/7)
+• Nigeria Poison Control: 07057000001
+• Emergency: 112 (national emergency number)
+
+**Remember:** Always consult a qualified pharmacist or doctor for medical advice specific to your situation.
+
+⚠️ This AI assistant provides general health information based on Nigerian clinical guidelines. It is not a substitute for professional medical advice.`;
+}
+
+const SUGGESTED_QUESTIONS = [
+  "What are the symptoms of malaria?",
+  "How is TB treated in Nigeria?",
+  "Is it safe to take Flagyl with alcohol?",
+  "What should I know about sickle cell disease?",
+  "How do I manage diabetes in Nigeria?",
+  "What are danger signs in pregnancy?",
+  "How is diarrhoea treated in children?",
+  "What drug interactions are dangerous?",
+];
+
 function PhotoTab({user}){
   const[name,setName]=useState(user?.name||"");
   const[phone,setPhone]=useState("");
@@ -748,6 +1154,223 @@ function AuthModal({onClose,onLogin}){
 }
 
 // ══════════════════════════════════════════════════════════════════════════
+// NIGERIA HEALTH AI — Rule-based engine, no API, no cost
+// ══════════════════════════════════════════════════════════════════════════
+const HEALTH_KB = [
+  {id:"malaria_treatment",tags:["malaria","coartem","alu","artemether","treat malaria","malaria drug","malaria medicine","malaria tablet","treat fever"],title:"Malaria Treatment in Nigeria",sev:"info",answer:`**First-line treatment:** Artemether-Lumefantrine (Coartem/ALu) is the standard first-line treatment for uncomplicated malaria in Nigeria.\n\n**How to take Coartem:**\n- Adults (≥35kg): 4 tablets twice daily for 3 days (24 tablets total)\n- Always take with food or milk — greatly improves absorption\n- Complete the full 3-day course even if feeling better\n\n**For severe malaria:** IV Artesunate — hospital only.\n\n**Important:** Chloroquine resistance is widespread in Nigeria. Do NOT use as first-line.\n\n**Prevention:** Insecticide-treated nets (ITNs), IPTp for pregnant women, seasonal chemoprevention for children.`},
+  {id:"malaria_symptoms",tags:["malaria symptom","fever","chills","shivering","headache malaria","body ache","sweating","vomiting malaria","convulsion child","fever malaria"],title:"Malaria Symptoms in Nigeria",sev:"warning",answer:`**Common symptoms:**\n- Fever (often cyclical — comes and goes)\n- Chills and shivering\n- Severe headache\n- Body aches and muscle pain\n- Nausea and vomiting\n- Fatigue and weakness\n\n**Severe malaria — go to hospital immediately:**\n- Convulsions (especially in children under 5)\n- Altered consciousness or confusion\n- Difficulty breathing\n- Severe anaemia (very pale)\n- Unable to drink or eat\n\n**Nigerian context:** Nigeria has the world's highest malaria burden. Always test with RDT before treating — not every fever is malaria.`},
+  {id:"tb_symptoms",tags:["tb","tuberculosis","cough blood","coughing","night sweat","weight loss","tb symptom","persistent cough","chest pain tb","chest infection"],title:"Tuberculosis (TB) in Nigeria",sev:"warning",answer:`**Common TB symptoms:**\n- Persistent cough lasting more than 2 weeks\n- Coughing up blood or blood-stained sputum\n- Night sweats\n- Unexplained weight loss\n- Fever (low-grade, persistent)\n- Chest pain and fatigue\n\n**Nigerian context:** Nigeria is one of the 30 high TB burden countries. TB/HIV co-infection is common — 17% of TB patients are HIV-positive.\n\n**Diagnosis:** GeneXpert MTB/RIF — detects TB AND drug resistance in under 2 hours. Available free through NTBLCP.\n\n**Important:** In Nigeria, persistent cough in a young person = TB until proven otherwise — not lung cancer.`},
+  {id:"tb_treatment",tags:["tb treatment","rifampicin","isoniazid","tb drug","treat tb","tb medicine","dots","ntblcp"],title:"TB Treatment in Nigeria",sev:"info",answer:`**Standard regimen (new cases):**\n- Phase 1 (2 months): Isoniazid + Rifampicin + Pyrazinamide + Ethambutol (HRZE)\n- Phase 2 (4 months): Isoniazid + Rifampicin (HR)\n- Total: 6 months — treatment is FREE at NTBLCP facilities\n\n**Do NOT stop early** — causes drug resistance.\n\n**Critical interaction:** Rifampicin reduces oral contraceptive effectiveness by 80%. Use condoms or injectable contraception throughout TB treatment and 4 weeks after.\n\n**MDR-TB:** Drug-resistant TB requires 18–24 months of second-line drugs.`},
+  {id:"hiv",tags:["hiv","aids","art","antiretroviral","tld","arvs","hiv drug","hiv treatment","viral load","cd4","hiv symptom"],title:"HIV/AIDS Treatment in Nigeria",sev:"info",answer:`**First-line ART in Nigeria:** Tenofovir + Lamivudine + Dolutegravir (TLD).\n\n**Key facts:**\n- ART is FREE at PEPFAR-supported facilities\n- Start ART as soon as possible after diagnosis\n- Take at the same time every day — consistency is critical\n- Viral load monitoring every 6–12 months\n\n**Nigeria's burden:** ~1.9 million Nigerians live with HIV — world's second largest burden. Highest prevalence in Cross River, Benue, Taraba, Akwa Ibom.\n\n**PMTCT:** HIV-positive pregnant women receive lifelong ART (Option B+) to prevent mother-to-child transmission.`},
+  {id:"hypertension",tags:["high blood pressure","hypertension","bp","blood pressure","amlodipine","lisinopril","hypertension drug","bp medicine","hypertension treatment","stroke heart"],title:"Hypertension in Nigeria",sev:"info",answer:`**How common:** 1 in 3 Nigerian adults. Leading cause of stroke, chronic kidney disease, and heart failure in Nigeria.\n\n**First-line medications:**\n- Amlodipine (most common first-line)\n- Lisinopril or Enalapril\n- Hydrochlorothiazide\n- Combination: Amlodipine + Lisinopril widely used\n\n**Lifestyle changes:**\n- Reduce salt (less Maggi, bouillon cubes, processed foods)\n- Increase physical activity\n- Reduce alcohol\n- Monitor BP regularly\n\n**Target:** Below 130/80 mmHg.\n\n**Warning:** Many Nigerians diagnosed only after stroke or heart attack — regular BP checks are essential.`},
+  {id:"diabetes",tags:["diabetes","sugar","metformin","glibenclamide","insulin","blood sugar","glucose","diabetic","type 2","diabetes drug","diabetes symptom"],title:"Diabetes in Nigeria",sev:"info",answer:`**Symptoms:** Frequent urination (especially at night), excessive thirst, unexplained weight loss, fatigue, blurred vision, slow-healing wounds, recurrent infections.\n\n**Medications in Nigeria:**\n- Metformin (first-line — affordable and widely available)\n- Glibenclamide (Daonil/Euglucon)\n- Insulin (Actrapid, Mixtard) for type 1 and advanced type 2\n\n**Dietary advice:**\n- Reduce white rice, eba, fufu, sugary drinks\n- Eat more vegetables, beans, unripe plantain\n- Avoid Fanta, Malta, energy drinks\n- Eat regular smaller meals\n\n**Warning:** Metformin + alcohol = dangerous lactic acidosis.`},
+  {id:"sickle_cell",tags:["sickle cell","sca","hbs","genotype","as","ss","sickle","crisis","scd","sickle cell symptom","sickle cell treatment"],title:"Sickle Cell Disease in Nigeria",sev:"warning",answer:`**Nigeria's burden:** World's highest — 150,000 children born with SCD annually. ~25% of Nigerians carry sickle cell trait (AS).\n\n**Crisis triggers to AVOID:**\n- Dehydration — drink plenty of water\n- Cold weather (harmattan season)\n- Infections especially malaria\n- Physical overexertion\n- Emotional stress and alcohol\n\n**Management:**\n- Daily folic acid\n- Prophylactic penicillin (children under 5)\n- Hydroxyurea therapy\n- Malaria prevention (nets + chemoprophylaxis)\n- Regular clinic follow-up\n\n**Genetic counselling:** Pre-marital genotype testing strongly recommended. AS + AS = 25% chance of SS child.`},
+  {id:"maternal",tags:["pregnant","pregnancy","antenatal","anc","maternal","eclampsia","delivery","birth","pregnancy danger","safe delivery","folic acid pregnancy"],title:"Maternal Health in Nigeria",sev:"warning",answer:`**Nigeria's MMR:** ~512 per 100,000 live births — one of world's highest.\n\n**Main causes of maternal death:**\n1. Haemorrhage (leading cause)\n2. Eclampsia/pre-eclampsia\n3. Sepsis\n4. Unsafe abortion\n5. Obstructed labour\n\n**Danger signs — seek help immediately:**\n- Severe headache with visual disturbance (eclampsia warning)\n- Vaginal bleeding at any stage\n- Convulsions\n- Difficulty breathing\n- Reduced fetal movements\n- Severe abdominal pain\n\n**ANC:** At least 8 visits. Includes HIV testing, malaria prevention (IPTp), iron + folic acid, tetanus vaccination.\n\n**Eclampsia:** IV Magnesium Sulphate (MgSO4) is drug of choice in Nigerian emergencies.`},
+  {id:"lassa",tags:["lassa","lassa fever","lassa virus","haemorrhagic","bleeding disease","rat disease","lassa symptom"],title:"Lassa Fever in Nigeria",sev:"danger",answer:`**Endemic states:** Edo, Ondo, Bauchi, Taraba — Nigeria has world's highest Lassa fever burden.\n\n**Symptoms:**\n- Fever, weakness, headache (early)\n- Sore throat, chest pain, vomiting (progressive)\n- Bleeding from mouth, nose (severe cases)\n- Facial swelling\n\n**Treatment:** Ribavirin antiviral — most effective when given early. Strict IPC to prevent spread.\n\n**Prevention:**\n- Store food in rodent-proof containers\n- Avoid contact with rats and their droppings\n- Cook food thoroughly\n- Avoid bush-rat consumption\n\n**Report to NCDC:** 0800-970-0010 (toll-free)`},
+  {id:"paracetamol",tags:["paracetamol dose","panadol dose","how much paracetamol","paracetamol children","paracetamol adult","paracetamol overdose"],title:"Paracetamol Dosage Guide",sev:"info",answer:`**Adult dose:** 500mg–1000mg every 4–6 hours. Maximum: 4000mg (8 × 500mg tablets) per day.\n\n**Children's dose (by weight):**\n- 10–15mg per kg body weight every 4–6 hours\n- 20kg child = 200–300mg per dose\n- Use paediatric syrup for children under 6\n\n**WARNINGS:**\n- Never exceed 4g/day — risk of serious liver damage\n- Avoid alcohol with Paracetamol\n- Do not combine with other Paracetamol-containing medications (cold remedies)\n- Reduce dose in liver disease\n\n**Overdose signs:** Nausea, vomiting, abdominal pain, jaundice — seek emergency care immediately.`},
+  {id:"flagyl",tags:["flagyl","metronidazole","flagyl use","flagyl dose","what is flagyl","flagyl infection","metronidazole use"],title:"Flagyl (Metronidazole) — Uses and Dosage",sev:"warning",answer:`**What Flagyl treats:**\n- Bacterial vaginal infections\n- Dental and mouth infections\n- Stomach infections (H. pylori)\n- Pelvic inflammatory disease\n- Amoebiasis and giardia\n\n**Adult dosage:** 400–500mg three times daily for 5–7 days.\n\n**⚠️ CRITICAL WARNING — Flagyl + Alcohol:**\nCombining Flagyl with ANY alcohol (beer, palm wine, ogogoro, stout) causes severe reaction:\n- Violent nausea and vomiting\n- Flushing and sweating\n- Rapid heartbeat and headache\n\n**Avoid ALL alcohol during treatment AND 48 hours after last tablet.**`},
+  {id:"child_fever",tags:["child fever","baby fever","infant fever","fever child","fever baby","temperature child","fever under 5","reduce fever","treat fever child"],title:"Managing Fever in Nigerian Children",sev:"warning",answer:`**First steps:**\n1. Take temperature — fever is above 37.5°C\n2. Remove excess clothing\n3. Give paracetamol syrup at correct dose (10–15mg/kg)\n4. Ensure child drinks plenty of fluids\n\n**Children's Paracetamol doses:**\n- 3–12 months (5–10kg): 60–120mg per dose\n- 1–5 years (10–20kg): 120–250mg per dose\n- 6–12 years (20–40kg): 250–500mg per dose\nEvery 4–6 hours. Maximum 4 doses per day.\n\n**Go to hospital immediately if:**\n- Temperature above 40°C\n- Convulsions/seizures\n- Child is unresponsive or very drowsy\n- Rash with fever\n- Baby under 3 months with any fever\n\n**Nigerian context:** Always rule out malaria in feverish child — do RDT test.`},
+  {id:"nafdac",tags:["nafdac","fake drug","counterfeit drug","verify drug","nafdac number","genuine drug","drug check","substandard"],title:"How to Verify a Drug is Genuine",sev:"warning",answer:`**Check for NAFDAC registration number:**\nEvery genuine drug must have a NAFDAC number on the pack (e.g. A4-0001).\n\n**How to verify:**\n1. Visit nafdac.gov.ng/drug-verification\n2. Call NAFDAC: 0800-900-4477 (toll-free)\n3. Check for proper expiry date and batch number\n\n**Signs of fake drugs:**\n- Spelling errors on packaging\n- Blurred or faded print\n- Unusually cheap price\n- No NAFDAC number\n- Broken or tampered seal\n- Unusual smell or texture\n\n**Always buy from registered pharmacies only — never from roadside sellers.**`},
+  {id:"cholera",tags:["cholera","diarrhoea","watery stool","ors","rehydration","cholera symptom","cholera treatment","dehydration","loose stool"],title:"Cholera and Diarrhoea Treatment",sev:"danger",answer:`**Immediate treatment — ORS:**\n- Mix one ORS sachet in 1 litre of clean water\n- Give frequently in small sips\n- Adults: 3 litres per day during diarrhoea\n\n**Home ORS if no sachets:**\n- 1 litre clean water + 6 teaspoons sugar + 1/2 teaspoon salt\n\n**Go to hospital immediately if:**\n- Severe dehydration (sunken eyes, no urine, very weak)\n- Bloody diarrhoea\n- Unable to drink\n- Baby or elderly person affected\n\n**Report outbreaks:** NCDC: 0800-970-0010\n\n**Prevention:** Clean water, handwashing, use latrines, avoid street food during outbreaks.`},
+  {id:"antibiotics",tags:["antibiotic","antibiotics","antibiotic resistance","finish antibiotic","stop antibiotic","antibiotic course","antibiotic not working","how to take antibiotic"],title:"Antibiotics — Important Information",sev:"warning",answer:`**Always complete your antibiotic course:**\nStopping early is dangerous — causes antibiotic resistance.\n\n**Antibiotics do NOT treat:**\n- Common cold and flu (viral)\n- Most sore throats (usually viral)\n- COVID-19\n\n**Common Nigerian antibiotic mistakes:**\n1. Taking Flagyl with alcohol (severe reaction)\n2. Taking Ciprofloxacin with antacids (blocks absorption — separate by 2 hours)\n3. Taking Doxycycline with milk or dairy (reduces absorption)\n4. Stopping treatment when feeling better\n5. Buying antibiotics without prescription\n6. Sharing antibiotics with family or friends\n\n**Antibiotic resistance is a growing crisis in Nigeria — use only when prescribed.**`},
+];
+
+function queryAI(question) {
+  if (!question || question.trim().length < 3) return null;
+  const q = question.toLowerCase().trim();
+  const scored = HEALTH_KB.map(entry => {
+    let score = 0;
+    for (const tag of entry.tags) {
+      if (q.includes(tag)) score += tag.split(" ").length * 2;
+      else if (tag.split(" ").some(w => q.includes(w) && w.length > 3)) score += 1;
+    }
+    if (entry.title.toLowerCase().split(" ").some(w => q.includes(w) && w.length > 3)) score += 1;
+    return { ...entry, score };
+  }).filter(e => e.score > 0).sort((a, b) => b.score - a.score);
+  return scored.length > 0 ? scored[0] : null;
+}
+
+const QUICK_QS = [
+  "What are malaria symptoms?",
+  "How to treat malaria in Nigeria?",
+  "Paracetamol dosage for children",
+  "What does Flagyl treat?",
+  "Signs of high blood pressure",
+  "How to manage sickle cell crisis",
+  "TB symptoms in Nigeria",
+  "Lassa fever symptoms",
+  "Diabetes diet in Nigeria",
+  "How to verify a NAFDAC drug",
+  "Cholera treatment with ORS",
+  "Danger signs in pregnancy",
+];
+
+// ── AI TAB COMPONENT ───────────────────────────────────────────────────────
+function AITab({ user }) {
+  const [question, setQuestion] = useState("");
+  const [result, setResult]     = useState(null);
+  const [asked, setAsked]       = useState(false);
+  const [history, setHistory]   = useState([]);
+
+  function ask(q) {
+    const query = q || question;
+    if (!query.trim()) return;
+    const res = queryAI(query);
+    setResult(res);
+    setAsked(true);
+    setQuestion(query);
+    setHistory(h => [{ q: query, found: !!res }, ...h.slice(0, 4)]);
+  }
+
+  const sevStyle = {
+    danger:  { bg:"#FEF2F2", border:C.red,   text:"#7F1D1D", icon:"🚨" },
+    warning: { bg:"#FFFBEB", border:C.amber, text:"#78350F", icon:"⚠️" },
+    info:    { bg:C.lBlue,   border:C.blue,  text:"#1E3A8A", icon:"ℹ️" },
+  };
+
+  const sty = result ? (sevStyle[result.sev] || sevStyle.info) : sevStyle.info;
+
+  // Format markdown-like bold text
+  function formatAnswer(text) {
+    return text.split("\n").map((line, i) => {
+      const formatted = line.replace(/\*\*(.*?)\*\*/g, (_, m) =>
+        `<strong>${m}</strong>`);
+      return <div key={i} style={{ marginBottom: line === "" ? 8 : 2 }}
+        dangerouslySetInnerHTML={{ __html: formatted || "&nbsp;" }} />;
+    });
+  }
+
+  return (
+    <div>
+      <Card style={{ borderTop: `3px solid ${C.blue}` }}>
+        <STitle>🤖 NigeriaHealthAI — Ask a health question</STitle>
+        <p style={{ fontSize: 13, color: C.muted, marginBottom: 16, lineHeight: 1.6 }}>
+          Ask any health question in plain English. Powered by Nigerian clinical knowledge —
+          malaria, TB, HIV, diabetes, hypertension, sickle cell, maternal health and more.
+        </p>
+
+        <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+          <input
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && ask()}
+            placeholder="e.g. What are the symptoms of malaria?"
+            style={{ flex: 1, padding: "11px 14px", fontSize: 14,
+              border: `1px solid ${C.border}`, borderRadius: 8,
+              outline: "none", background: C.gray, color: C.text,
+              fontFamily: "inherit" }}
+          />
+          <Btn label="Ask →" onClick={() => ask()} disabled={!question.trim()} />
+        </div>
+
+        {/* Quick questions */}
+        <div style={{ marginBottom: 8 }}>
+          <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, fontWeight: 600 }}>
+            QUICK QUESTIONS:
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {QUICK_QS.map((q, i) => (
+              <button key={i} onClick={() => ask(q)} style={{
+                padding: "5px 12px", fontSize: 12, fontWeight: 500,
+                border: `1px solid ${C.border}`, borderRadius: 20,
+                background: C.white, color: C.muted, cursor: "pointer",
+              }}>{q}</button>
+            ))}
+          </div>
+        </div>
+      </Card>
+
+      {/* Result */}
+      {asked && (
+        <div style={{ background: result ? sty.bg : "#FFFBEB",
+          border: `1px solid ${result ? sty.border : C.amber}`,
+          borderLeft: `4px solid ${result ? sty.border : C.amber}`,
+          borderRadius: "0 12px 12px 0", padding: "1rem 1.25rem", marginBottom: 16 }}>
+
+          {result ? (
+            <>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: 20 }}>{sty.icon}</span>
+                <span style={{ fontWeight: 700, fontSize: 15, color: sty.text }}>{result.title}</span>
+                <span style={{ background: sty.border, color: "#fff", fontSize: 10,
+                  fontWeight: 600, padding: "2px 10px", borderRadius: 20 }}>
+                  Nigerian clinical database
+                </span>
+              </div>
+              <div style={{ fontSize: 13, color: sty.text, lineHeight: 1.8 }}>
+                {formatAnswer(result.answer)}
+              </div>
+              <div style={{ marginTop: 16, paddingTop: 12, borderTop: `1px solid ${C.border}` }}>
+                <div style={{ fontSize: 11, color: C.muted, marginBottom: 8, fontWeight: 600 }}>
+                  SPEAK TO A PROFESSIONAL ABOUT THIS:
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  {PROFESSIONALS.map(p => (
+                    <WABtn key={p.id}
+                      href={waUrl(p.whatsapp,
+                        `Hello ${p.name},\n\nI asked NigeriaHealthAI: "${question}"\n\nI would like professional advice on this topic.\n\nSent via Nigeria Drug Checker — MCAIS`)}
+                      label={p.role === "doctor" ? `Ask ${p.name.split(" ")[0]}` : `Ask ${p.name.split(" ")[1] || p.name.split(" ")[0]}`}
+                      color={p.color}
+                      icon={p.role === "doctor" ? "🩺" : "💊"} />
+                  ))}
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 14, color: "#78350F", marginBottom: 12 }}>
+                🟡 <strong>Not found in AI knowledge base</strong><br/>
+                <span style={{ fontSize: 13 }}>
+                  I don't have specific information about "<em>{question}</em>" yet.
+                  Please ask one of our verified professionals directly.
+                </span>
+              </div>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {PROFESSIONALS.map(p => (
+                  <WABtn key={p.id}
+                    href={waUrl(p.whatsapp,
+                      `Hello ${p.name},\n\nI have a health question: "${question}"\n\nCould you please advise?\n\nSent via Nigeria Drug Checker — MCAIS`)}
+                    label={`Ask ${p.name.split(" ").slice(-1)[0]}`}
+                    color={p.color}
+                    icon={p.role === "doctor" ? "🩺" : "💊"} />
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* History */}
+      {history.length > 1 && (
+        <Card>
+          <STitle>Recent questions</STitle>
+          {history.slice(1).map((h, i) => (
+            <div key={i} onClick={() => ask(h.q)}
+              style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 0",
+                borderBottom: `1px solid ${C.border}`, cursor: "pointer" }}>
+              <span style={{ fontSize: 14 }}>{h.found ? "✅" : "🟡"}</span>
+              <span style={{ fontSize: 13, color: C.blue, textDecoration: "underline" }}>{h.q}</span>
+            </div>
+          ))}
+        </Card>
+      )}
+
+      <Card>
+        <STitle>About NigeriaHealthAI</STitle>
+        <div style={{ fontSize: 13, color: C.muted, lineHeight: 1.7 }}>
+          NigeriaHealthAI is powered by a Nigerian clinical knowledge base covering 15+ health topics
+          common in Nigeria — malaria, TB, HIV, diabetes, hypertension, sickle cell, maternal health,
+          Lassa fever, and more. Built by MCAIS as part of the NigeriaHealthLLM research project.
+          <br/><br/>
+          <strong style={{ color: C.text }}>⚠️ This is not a substitute for professional medical advice.</strong>{" "}
+          Always consult a qualified pharmacist or doctor for your specific situation.
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════
 // LANDING PAGE
 // ══════════════════════════════════════════════════════════════════════════
 function Landing({onStart}){
@@ -961,6 +1584,7 @@ export default function App(){
 
   const TABS=[
     {id:"checker",  label:"💊 Drug Check"},
+    {id:"ai",       label:"🤖 AI Health"},
     {id:"profs",    label:"👨‍⚕️ Professionals"},
     {id:"photo",    label:"📸 Photo"},
     {id:"reviews",  label:"⭐ Review"},
@@ -1035,6 +1659,7 @@ export default function App(){
         </div>
 
         {tab==="checker" &&<DrugTab    user={user}/>}
+        {tab==="ai"      &&<AITab      user={user}/>}
         {tab==="profs"   &&<ProfsTab/>}
         {tab==="photo"   &&<PhotoTab   user={user}/>}
         {tab==="reviews" &&<ReviewTab  user={user}/>}
