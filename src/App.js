@@ -1,4 +1,12 @@
 import { useState, useEffect, useRef } from "react";
+import {
+  verifyAuthenticity,
+  submitFakeDrugReport,
+  getPublicReportPoints,
+  listFakeDrugReports,
+  updateReportModerationStatus,
+  validateImageFile,
+} from "./services/drugSafety";
 
 // ══════════════════════════════════════════════════════════════════════════
 // CONFIGURATION — Edit this to add/remove pharmacists and doctors
