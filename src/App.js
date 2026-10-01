@@ -6,6 +6,8 @@ import {
   listFakeDrugReports,
   updateReportModerationStatus,
   validateImageFile,
+  STOCKIST_MODEL_PLACEHOLDER,
+  SMS_FALLBACK_DESIGN,
 } from "./services/drugSafety";
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -341,6 +343,263 @@ function DrugTab({user}){
   function check(){
     if(!d1.trim()||!d2.trim()) return;
     setResult(checkDrug(d1,d2)); setChecked(true);
+  }
+
+  function VerificationTab(){
+    const[nafdacCode,setNafdacCode]=useState("");
+    const[file,setFile]=useState(null);
+    const[fileError,setFileError]=useState("");
+    const[result,setResult]=useState(null);
+    const ref=useRef();
+
+    function onFileChange(e){
+      const picked=e.target.files?.[0];
+      if(!picked){ setFile(null); setFileError(""); return; }
+      const v=validateImageFile(picked);
+      if(!v.valid){
+        setFile(null);
+        setFileError(v.error);
+        return;
+      }
+      setFile(picked);
+      setFileError("");
+    }
+
+    function submit(){
+      const response=verifyAuthenticity({nafdacCode,imageFile:file});
+      console.info("verification_request",{
+        code:nafdacCode,
+        normalized_code:response.normalized_code,
+        status:response.status,
+        image_received:response.image.received,
+      });
+      setResult(response);
+    }
+
+    const canSubmit = nafdacCode.trim().length>0 && !fileError;
+
+    return(
+      <Card style={{borderTop:`3px solid ${C.blue}`}}>
+        <STitle>Verify medicine authenticity (pilot)</STitle>
+        <p style={{fontSize:13,color:C.muted,marginBottom:16,lineHeight:1.6}}>
+          Enter the NAFDAC code from the pack. You can also add a packaging photo for manual pharmacist review.
+          This pilot does not guarantee authenticity — always buy from registered pharmacies.
+        </p>
+        <Inp
+          label="NAFDAC code"
+          placeholder="e.g. A4-0001"
+          value={nafdacCode}
+          onChange={setNafdacCode}
+        />
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:13,color:C.muted,display:"block",marginBottom:6}}>Packaging photo (optional)</label>
+          <button onClick={()=>ref.current?.click()} style={{
+            width:"100%",padding:"10px 12px",fontSize:13,textAlign:"left",
+            border:`1px solid ${fileError?C.red:C.border}`,borderRadius:8,background:C.gray,cursor:"pointer"
+          }}>
+            {file ? `📷 ${file.name}` : "Upload JPG, PNG, or WEBP (max 5MB)"}
+          </button>
+          <input ref={ref} type="file" accept="image/jpeg,image/png,image/webp" onChange={onFileChange} style={{display:"none"}}/>
+          {fileError&&<div style={{fontSize:12,color:C.red,marginTop:6}}>{fileError}</div>}
+        </div>
+        <Btn label="Verify code" onClick={submit} disabled={!canSubmit} full/>
+        {result&&(
+          <div style={{marginTop:14,background:C.gray,border:`1px solid ${C.border}`,borderRadius:10,padding:12}}>
+            <div style={{fontSize:12,color:C.muted,marginBottom:4}}>Verification status</div>
+            <div style={{fontSize:14,fontWeight:700,color:C.text,textTransform:"capitalize"}}>{result.status.replace("_"," ")}</div>
+            <div style={{fontSize:13,color:C.text,marginTop:6,lineHeight:1.6}}>{result.message}</div>
+            <div style={{fontSize:12,color:C.muted,marginTop:8}}>
+              Normalized code: {result.normalized_code||"N/A"} · Image received: {result.image.received?"Yes":"No"}
+              {result.image.queued_for_review?" · Manual review queued":""}
+            </div>
+            {!!result.errors?.length&&(
+              <ul style={{marginTop:8,paddingLeft:18,color:C.red,fontSize:12}}>
+                {result.errors.map((err,idx)=><li key={idx}>{err}</li>)}
+              </ul>
+            )}
+          </div>
+        )}
+      </Card>
+    );
+  }
+
+  function ReportFakeTab({onSubmitted}){
+    const[productName,setProductName]=useState("");
+    const[nafdacCode,setNafdacCode]=useState("");
+    const[locationText,setLocationText]=useState("");
+    const[latitude,setLatitude]=useState("");
+    const[longitude,setLongitude]=useState("");
+    const[description,setDescription]=useState("");
+    const[reporterContact,setReporterContact]=useState("");
+    const[photoFile,setPhotoFile]=useState(null);
+    const[photoError,setPhotoError]=useState("");
+    const[errors,setErrors]=useState([]);
+    const[submitted,setSubmitted]=useState(null);
+    const ref=useRef();
+
+    function onPhotoChange(e){
+      const picked=e.target.files?.[0];
+      if(!picked){ setPhotoFile(null); setPhotoError(""); return; }
+      const v=validateImageFile(picked);
+      if(!v.valid){
+        setPhotoFile(null);
+        setPhotoError(v.error);
+        return;
+      }
+      setPhotoFile(picked);
+      setPhotoError("");
+    }
+
+    function submit(){
+      const coordinates = latitude!==""&&longitude!==""
+        ? {lat:Number(latitude),lng:Number(longitude)}
+        : null;
+      const res=submitFakeDrugReport({
+        productName,
+        nafdacCode,
+        locationText,
+        coordinates,
+        description,
+        reporterContact,
+        photoFile,
+      });
+      if(!res.ok){
+        setErrors(res.errors||["Could not submit report."]);
+        setSubmitted(null);
+        return;
+      }
+      console.info("fake_drug_report_submitted",{
+        report_id:res.report.id,
+        product_name:res.report.product_name,
+        moderation_status:res.report.moderation_status,
+      });
+      setErrors([]);
+      setSubmitted(res.report);
+      setProductName(""); setNafdacCode(""); setLocationText(""); setLatitude(""); setLongitude("");
+      setDescription(""); setReporterContact(""); setPhotoFile(null); setPhotoError("");
+      onSubmitted?.();
+    }
+
+    return(
+      <Card style={{borderTop:`3px solid ${C.red}`}}>
+        <STitle>Report suspected fake drug</STitle>
+        <p style={{fontSize:13,color:C.muted,marginBottom:16,lineHeight:1.6}}>
+          Report suspicious medicines in your area. New reports are marked pending until moderation.
+        </p>
+        <Inp label="Product name" placeholder="e.g. Coartem" value={productName} onChange={setProductName}/>
+        <Inp label="NAFDAC code (optional)" placeholder="e.g. A4-0001" value={nafdacCode} onChange={setNafdacCode}/>
+        <Inp label="Location (text)" placeholder="e.g. Wuse market, Abuja" value={locationText} onChange={setLocationText}/>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12}}>
+          <Inp label="Latitude (optional)" placeholder="e.g. 9.0723" value={latitude} onChange={setLatitude}/>
+          <Inp label="Longitude (optional)" placeholder="e.g. 7.4913" value={longitude} onChange={setLongitude}/>
+        </div>
+        <Txt label="Description" placeholder="Describe why you suspect this drug is fake." value={description} onChange={setDescription} rows={4}/>
+        <Inp label="Reporter contact (optional)" placeholder="Phone or email" value={reporterContact} onChange={setReporterContact}/>
+        <div style={{marginBottom:12}}>
+          <label style={{fontSize:13,color:C.muted,display:"block",marginBottom:6}}>Photo (optional)</label>
+          <button onClick={()=>ref.current?.click()} style={{
+            width:"100%",padding:"10px 12px",fontSize:13,textAlign:"left",
+            border:`1px solid ${photoError?C.red:C.border}`,borderRadius:8,background:C.gray,cursor:"pointer"
+          }}>
+            {photoFile ? `📷 ${photoFile.name}` : "Upload packaging photo"}
+          </button>
+          <input ref={ref} type="file" accept="image/jpeg,image/png,image/webp" onChange={onPhotoChange} style={{display:"none"}}/>
+          {photoError&&<div style={{fontSize:12,color:C.red,marginTop:6}}>{photoError}</div>}
+        </div>
+        {!!errors.length&&(
+          <div style={{background:"#FEF2F2",border:`1px solid ${C.red}`,borderRadius:8,padding:"10px 12px",marginBottom:12}}>
+            <div style={{fontSize:12,fontWeight:700,color:"#7F1D1D",marginBottom:6}}>Please fix the following:</div>
+            <ul style={{margin:0,paddingLeft:18,fontSize:12,color:"#7F1D1D"}}>
+              {errors.map((err,idx)=><li key={idx}>{err}</li>)}
+            </ul>
+          </div>
+        )}
+        {submitted&&(
+          <div style={{background:"#F0FDF4",border:`1px solid ${C.green}`,borderRadius:8,padding:"10px 12px",marginBottom:12}}>
+            <div style={{fontSize:13,color:"#14532D",fontWeight:600}}>Report submitted.</div>
+            <div style={{fontSize:12,color:"#14532D",marginTop:4}}>
+              ID: {submitted.id} · Status: {submitted.moderation_status}
+            </div>
+          </div>
+        )}
+        <Btn label="Submit report" onClick={submit} full/>
+      </Card>
+    );
+  }
+
+  function AlertsTab({refreshKey=0}){
+    const[points,setPoints]=useState([]);
+    const[allReports,setAllReports]=useState([]);
+    const[adminMode,setAdminMode]=useState(false);
+    const[msg,setMsg]=useState("");
+
+    function refresh(){
+      setPoints(getPublicReportPoints());
+      setAllReports(listFakeDrugReports({includeUnverified:true}));
+    }
+
+    useEffect(()=>{ refresh(); },[refreshKey]);
+
+    function moderate(reportId,nextStatus){
+      const res=updateReportModerationStatus(reportId,nextStatus);
+      if(!res.ok){ setMsg(res.error); return; }
+      setMsg(`Report updated to ${nextStatus}.`);
+      refresh();
+    }
+
+    const statusColor=(status)=> status==="verified" ? C.green : status==="rejected" ? C.red : C.amber;
+
+    return(
+      <div>
+        <Card style={{borderTop:`3px solid ${C.blue}`}}>
+          <STitle>Community fake drug alerts</STitle>
+          <p style={{fontSize:13,color:C.muted,marginBottom:14,lineHeight:1.6}}>
+            This feed shows crowd-sourced reports for awareness in Nigeria. Pending reports are unverified.
+          </p>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12,gap:12}}>
+            <div style={{fontSize:12,color:C.muted}}>Map-ready points: {points.length}</div>
+            <button onClick={()=>setAdminMode(v=>!v)} style={{
+              border:`1px solid ${C.border}`,borderRadius:20,padding:"6px 10px",fontSize:11,background:C.white,cursor:"pointer"
+            }}>
+              {adminMode?"Hide moderation":"Internal moderation"}
+            </button>
+          </div>
+          {msg&&<div style={{fontSize:12,color:C.blue,marginBottom:8}}>{msg}</div>}
+          {!points.length&&<div style={{fontSize:13,color:C.muted}}>No incident reports yet.</div>}
+          {points.map((p)=>(
+            <div key={p.id} style={{border:`1px solid ${C.border}`,borderRadius:10,padding:"10px 12px",marginBottom:8}}>
+              <div style={{display:"flex",justifyContent:"space-between",gap:8,alignItems:"center"}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.text}}>{p.product_name}</div>
+                <span style={{
+                  fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:20,color:"#fff",
+                  background:statusColor(p.moderation_status),textTransform:"uppercase"
+                }}>{p.moderation_status}</span>
+              </div>
+              <div style={{fontSize:12,color:C.muted,marginTop:4}}>
+                {p.location_text||"Location not shared"}{p.coordinates?` · (${p.coordinates.lat}, ${p.coordinates.lng})`:""}
+              </div>
+              {p.nafdac_code&&<div style={{fontSize:12,color:C.text,marginTop:4}}>NAFDAC: {p.nafdac_code}</div>}
+              <div style={{fontSize:11,color:C.muted,marginTop:4}}>Reported: {new Date(p.created_at).toLocaleString("en-NG")}</div>
+              {adminMode&&(
+                <div style={{display:"flex",gap:8,marginTop:8}}>
+                  <button onClick={()=>moderate(p.id,"pending")} style={{fontSize:11,padding:"4px 8px",border:`1px solid ${C.border}`,borderRadius:8,background:C.white,cursor:"pointer"}}>Pending</button>
+                  <button onClick={()=>moderate(p.id,"verified")} style={{fontSize:11,padding:"4px 8px",border:`1px solid ${C.green}`,borderRadius:8,background:"#F0FDF4",color:"#14532D",cursor:"pointer"}}>Verify</button>
+                  <button onClick={()=>moderate(p.id,"rejected")} style={{fontSize:11,padding:"4px 8px",border:`1px solid ${C.red}`,borderRadius:8,background:"#FEF2F2",color:"#7F1D1D",cursor:"pointer"}}>Reject</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </Card>
+
+        <Card>
+          <STitle>Phase 2 and 3 scaffolding</STitle>
+          <div style={{fontSize:13,color:C.text,lineHeight:1.7}}>
+            <div><strong>Stockist model placeholder:</strong> {STOCKIST_MODEL_PLACEHOLDER.name} ({STOCKIST_MODEL_PLACEHOLDER.verification_status})</div>
+            <div><strong>SMS fallback syntax:</strong> {SMS_FALLBACK_DESIGN.syntax.check} · {SMS_FALLBACK_DESIGN.syntax.report}</div>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   function buildMsg(){
@@ -1581,6 +1840,7 @@ export default function App(){
   const[tab,setTab]=useState("checker");
   const[user,setUser]=useState(null);
   const[showAuth,setShowAuth]=useState(false);
+  const[reportRefreshKey,setReportRefreshKey]=useState(0);
 
   if(page==="landing") return(
     <>
@@ -1592,6 +1852,9 @@ export default function App(){
 
   const TABS=[
     {id:"checker",  label:"💊 Drug Check"},
+    {id:"verify",   label:"🛡️ Verify Drug"},
+    {id:"report",   label:"🚨 Report Fake"},
+    {id:"alerts",   label:"🗺️ Alerts"},
     {id:"ai",       label:"🤖 AI Health"},
     {id:"profs",    label:"👨‍⚕️ Professionals"},
     {id:"photo",    label:"📸 Photo"},
@@ -1667,6 +1930,9 @@ export default function App(){
         </div>
 
         {tab==="checker" &&<DrugTab    user={user}/>}
+        {tab==="verify"  &&<VerificationTab/>}
+        {tab==="report"  &&<ReportFakeTab onSubmitted={()=>setReportRefreshKey(v=>v+1)}/>}
+        {tab==="alerts"  &&<AlertsTab refreshKey={reportRefreshKey}/>}
         {tab==="ai"      &&<AITab      user={user}/>}
         {tab==="profs"   &&<ProfsTab/>}
         {tab==="photo"   &&<PhotoTab   user={user}/>}

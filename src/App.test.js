@@ -1,8 +1,12 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import App from './App';
 
-test('renders learn react link', () => {
+test('shows new pilot tabs after starting app', () => {
   render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+  fireEvent.click(screen.getAllByRole('button', { name: /get started free/i })[0]);
+
+  expect(screen.getAllByText(/verify drug/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/report fake/i).length).toBeGreaterThan(0);
+  expect(screen.getAllByText(/alerts/i).length).toBeGreaterThan(0);
 });
